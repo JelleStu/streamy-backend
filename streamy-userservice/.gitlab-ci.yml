@@ -1,0 +1,26 @@
+stages:          # List of stages for jobs, and their order of execution
+  - build
+  - sonarqube
+  - deploy
+
+build-job:       # This job runs in the build stage, which runs first.
+  stage: build
+  tags:
+    - maven
+  script:
+    - "mvn clean install"
+
+sonarqube:
+  stage: sonarqube
+  script:
+    - mvn clean verify sonar:sonar
+
+deploy-job:      # This job runs in the deploy stage.
+  stage: deploy
+  script:
+    - echo "Deploying application.."
+    - mvn clean package
+    - docker build . -t eu.gcr.io/rb08-streamy/streamy-userservice:latest
+    - C:\deployment-userservice.sh
+  after_script:
+    - echo done deploying
